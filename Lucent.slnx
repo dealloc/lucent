@@ -3,6 +3,6 @@
     <Project Path="samples\Lucent.Samples.MultipleIndices\Lucent.Samples.MultipleIndices.csproj" Type="Classic C#" />
     <Project Path="samples\Lucent.Samples.Simple\Lucent.Samples.Simple.csproj" Type="Classic C#" />
   </Folder>
-  <Project Path="src\Lucent.Tests\Lucent.Tests.csproj" Type="Classic C#" />
+  <Project Path="tests\Lucent.Tests\Lucent.Tests.csproj" Type="Classic C#" />
   <Project Path="src\Lucent\Lucent.csproj" Type="Classic C#" />
 </Solution>
