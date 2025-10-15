@@ -46,7 +46,7 @@ dotnet test
 2. Add or update tests for your changes
 3. Update documentation if necessary
 4. Ensure all tests pass
-5. Submit your pull request against the `develop` branch
+5. Submit your pull request against the `master` branch
 
 ### Pull Request Description
 
