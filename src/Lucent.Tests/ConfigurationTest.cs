@@ -9,6 +9,16 @@ namespace Lucent.Tests;
 public class ConfigurationTest
 {
     [TestMethod]
+    public void IndexConfiguration_Default_Works()
+    {
+        var services = new ServiceCollection();
+        services.AddLucentIndex();
+
+        var provider = services.BuildServiceProvider();
+        Assert.IsNotNull(provider.GetRequiredService<IndexWriter>());
+    }
+
+    [TestMethod]
     public void IndexConfiguration_Directory_IsRequired()
     {
         var services = new ServiceCollection();

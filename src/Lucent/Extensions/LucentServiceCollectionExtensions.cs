@@ -31,8 +31,9 @@ public static class LucentServiceCollectionExtensions
         {
             var config = provider.GetRequiredService<IOptionsSnapshot<IndexConfiguration>>();
 
-            return new IndexWriter(config.Value.Directory,
-                new IndexWriterConfig(config.Value.Version, config.Value.Analyzer));
+            var writerConfig = config.Value.IndexWriterConfig ??
+                               new IndexWriterConfig(config.Value.Version, config.Value.Analyzer);
+            return new IndexWriter(config.Value.Directory, writerConfig);
         });
 
         // TODO: should we make these services transient to allow more fine grained control of re-creation?
@@ -59,8 +60,9 @@ public static class LucentServiceCollectionExtensions
         {
             var config = provider.GetRequiredKeyedService<IOptionsSnapshot<IndexConfiguration>>(name);
 
-            return new IndexWriter(config.Value.Directory,
-                new IndexWriterConfig(config.Value.Version, config.Value.Analyzer));
+            var writerConfig = config.Value.IndexWriterConfig ??
+                               new IndexWriterConfig(config.Value.Version, config.Value.Analyzer);
+            return new IndexWriter(config.Value.Directory, writerConfig);
         });
 
         // TODO: should we make these services transient to allow more fine grained control of re-creation?

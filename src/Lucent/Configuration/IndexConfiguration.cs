@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Lucene.Net.Analysis;
+using Lucene.Net.Index;
 using Lucene.Net.Util;
 
 namespace Lucent.Configuration;
@@ -30,4 +31,11 @@ public sealed class IndexConfiguration
     /// </summary>
     [Required]
     public Analyzer? Analyzer { get; set; }
+
+    /// <summary>
+    /// The <see cref="Lucene.Net.Index.IndexWriterConfig" /> used when creating the <see cref="IndexWriter" />.
+    /// If set to <c>null</c> (default), an instance will automatically be created from <see cref="Version" /> and
+    /// <see cref="Analyzer" />.
+    /// </summary>
+    public IndexWriterConfig? IndexWriterConfig { get; set; }
 }
