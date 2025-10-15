@@ -54,15 +54,16 @@ public static class LucentServiceCollectionExtensions
     {
         services.AddOptions<IndexConfiguration>(indexName);
         services.AddSingleton<IValidateOptions<IndexConfiguration>, IndexConfigurationValidator>();
-        services.TryAddKeyedTransient<IConfigureNamedOptions<IndexConfiguration>>(indexName);
+        services.TryAddTransient<IConfigureOptions<IndexConfiguration>, DefaultNamedIndexConfigurator>();
 
         services.AddKeyedScoped<IndexWriter>(indexName, static (provider, name) =>
         {
-            var config = provider.GetRequiredKeyedService<IOptionsSnapshot<IndexConfiguration>>(name);
+            var snapshot = provider.GetRequiredService<IOptionsSnapshot<IndexConfiguration>>();
+            var config = snapshot.Get(name as string);
 
-            var writerConfig = config.Value.IndexWriterConfig ??
-                               new IndexWriterConfig(config.Value.Version, config.Value.Analyzer);
-            return new IndexWriter(config.Value.Directory, writerConfig);
+            var writerConfig = config.IndexWriterConfig ??
+                               new IndexWriterConfig(config.Version, config.Analyzer);
+            return new IndexWriter(config.Directory, writerConfig);
         });
 
         // TODO: should we make these services transient to allow more fine grained control of re-creation?

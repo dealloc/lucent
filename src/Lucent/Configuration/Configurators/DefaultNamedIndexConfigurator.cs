@@ -1,6 +1,4 @@
-﻿using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Store;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 
 namespace Lucent.Configuration.Configurators;
 
@@ -10,12 +8,11 @@ namespace Lucent.Configuration.Configurators;
 /// <remarks>
 /// When deploying your application you should override the configuration (most likely with a specified directory).
 /// </remarks>
-internal class DefaultIndexConfigurator : IConfigureOptions<IndexConfiguration>
+internal class DefaultNamedIndexConfigurator : DefaultIndexConfigurator, IConfigureNamedOptions<IndexConfiguration>
 {
     /// <inheritdoc />
-    public void Configure(IndexConfiguration options)
+    public void Configure(string? name, IndexConfiguration options)
     {
-        options.Analyzer ??= new StandardAnalyzer(options.Version);
-        options.Directory ??= new RAMDirectory();
+        Configure(options);
     }
 }
