@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="Lucent.Tests\Lucent.Tests.csproj" Type="Classic C#" />
   <Project Path="Lucent\Lucent.csproj" Type="Classic C#" />
 </Solution>
