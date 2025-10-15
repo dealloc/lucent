@@ -10,8 +10,14 @@ namespace Lucent.Configuration.Configurators;
 /// <remarks>
 /// When deploying your application you should override the configuration (most likely with a specified directory).
 /// </remarks>
-internal class DefaultIndexConfigurator : IConfigureOptions<IndexConfiguration>
+internal class DefaultIndexConfigurator : IConfigureNamedOptions<IndexConfiguration>
 {
+    /// <inheritdoc />
+    public void Configure(string? name, IndexConfiguration options)
+    {
+        Configure(options);
+    }
+
     /// <inheritdoc />
     public void Configure(IndexConfiguration options)
     {

@@ -23,23 +23,7 @@ public static class LucentServiceCollectionExtensions
     /// </remarks>
     public static IServiceCollection AddLucentIndex(this IServiceCollection services)
     {
-        services.AddOptions<IndexConfiguration>();
-        services.AddSingleton<IValidateOptions<IndexConfiguration>, IndexConfigurationValidator>();
-        services.TryAddTransient<IConfigureOptions<IndexConfiguration>, DefaultIndexConfigurator>();
-
-        services.AddScoped<IndexWriter>(static provider =>
-        {
-            var config = provider.GetRequiredService<IOptionsSnapshot<IndexConfiguration>>();
-
-            var writerConfig = config.Value.IndexWriterConfig ??
-                               new IndexWriterConfig(config.Value.Version, config.Value.Analyzer);
-            return new IndexWriter(config.Value.Directory, writerConfig);
-        });
-
-        // TODO: should we make these services transient to allow more fine grained control of re-creation?
-        services.AddScoped<IndexReader>(static provider => provider.GetRequiredService<IndexWriter>().GetReader(false));
-        services.AddScoped<IndexSearcher>(static provider =>
-            new IndexSearcher(provider.GetRequiredService<IndexReader>()));
+        AddKeyedLucentIndex(services, null);
 
         return services;
     }
@@ -52,11 +36,23 @@ public static class LucentServiceCollectionExtensions
     /// <param name="indexName">The name of the index to register, this will also serve as the key for services.</param>
     public static IServiceCollection AddNamedLucentIndex(this IServiceCollection services, string indexName)
     {
-        services.AddOptions<IndexConfiguration>(indexName);
-        services.AddSingleton<IValidateOptions<IndexConfiguration>, IndexConfigurationValidator>();
-        services.TryAddTransient<IConfigureOptions<IndexConfiguration>, DefaultNamedIndexConfigurator>();
+        AddKeyedLucentIndex(services, indexName);
 
-        services.AddKeyedScoped<IndexWriter>(indexName, static (provider, name) =>
+        return services;
+    }
+
+    /// <summary>
+    /// Adds all services under the <paramref name="key" /> service key.
+    /// If <paramref name="key" /> is <c>null</c>, services will be registered as if they weren't keyed.
+    /// </summary>
+    private static void AddKeyedLucentIndex(IServiceCollection services, string? key)
+    {
+        var name = key ?? Options.Options.DefaultName;
+        services.AddOptions<IndexConfiguration>(name);
+        services.AddSingleton<IValidateOptions<IndexConfiguration>, IndexConfigurationValidator>();
+        services.TryAddTransient<IConfigureOptions<IndexConfiguration>, DefaultIndexConfigurator>();
+
+        services.AddKeyedScoped<IndexWriter>(key, static (provider, name) =>
         {
             var snapshot = provider.GetRequiredService<IOptionsSnapshot<IndexConfiguration>>();
             var config = snapshot.Get(name as string);
@@ -67,11 +63,9 @@ public static class LucentServiceCollectionExtensions
         });
 
         // TODO: should we make these services transient to allow more fine grained control of re-creation?
-        services.AddKeyedScoped<IndexReader>(indexName,
+        services.AddKeyedScoped<IndexReader>(key,
             static (provider, name) => provider.GetRequiredKeyedService<IndexWriter>(name).GetReader(false));
-        services.AddKeyedScoped<IndexSearcher>(indexName, static (provider, name) =>
+        services.AddKeyedScoped<IndexSearcher>(key, static (provider, name) =>
             new IndexSearcher(provider.GetRequiredKeyedService<IndexReader>(name)));
-
-        return services;
     }
 }
