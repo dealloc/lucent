@@ -1,4 +1,5 @@
 ﻿using Lucene.Net.Index;
+using Lucene.Net.Search;
 using Lucent.Configuration;
 using Lucent.Configuration.Configurators;
 using Lucent.Configuration.Validation;
@@ -34,6 +35,11 @@ public static class LucentServiceCollectionExtensions
                 new IndexWriterConfig(config.Value.Version, config.Value.Analyzer));
         });
 
+        // TODO: should we make these services transient to allow more fine grained control of re-creation?
+        services.AddScoped<IndexReader>(static provider => provider.GetRequiredService<IndexWriter>().GetReader(false));
+        services.AddScoped<IndexSearcher>(static provider =>
+            new IndexSearcher(provider.GetRequiredService<IndexReader>()));
+
         return services;
     }
 
@@ -56,6 +62,12 @@ public static class LucentServiceCollectionExtensions
             return new IndexWriter(config.Value.Directory,
                 new IndexWriterConfig(config.Value.Version, config.Value.Analyzer));
         });
+
+        // TODO: should we make these services transient to allow more fine grained control of re-creation?
+        services.AddKeyedScoped<IndexReader>(indexName,
+            static (provider, name) => provider.GetRequiredKeyedService<IndexWriter>(name).GetReader(false));
+        services.AddKeyedScoped<IndexSearcher>(indexName, static (provider, name) =>
+            new IndexSearcher(provider.GetRequiredKeyedService<IndexReader>(name)));
 
         return services;
     }

@@ -58,3 +58,6 @@ nunit-*.xml
 
 # User specific configuration
 **/*.DotSettings.user
+
+# Samples folders / files
+/index/

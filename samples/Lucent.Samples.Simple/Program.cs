@@ -1,5 +1,7 @@
 ﻿using Lucene.Net.Documents;
+using Lucene.Net.Documents.Extensions;
 using Lucene.Net.Index;
+using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucent.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,5 +20,18 @@ var app = builder.Build();
 using var scope = app.Services.CreateScope();
 using var writer = scope.ServiceProvider.GetRequiredService<IndexWriter>();
 
-writer.AddDocument(new Document());
+var document = new Document();
+document.AddStringField("name", "brown fox",  Field.Store.YES);
+writer.AddDocument(document);
 writer.Commit();
+
+var searcher = scope.ServiceProvider.GetRequiredService<IndexSearcher>();
+var query = new PhraseQuery
+{
+    new Term("name", "brown fox")
+};
+
+var hits = searcher.Search(query, 10);
+
+Console.Write("Hits: ");
+Console.WriteLine(hits.TotalHits);
