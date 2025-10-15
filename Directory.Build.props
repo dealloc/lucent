@@ -9,6 +9,7 @@
     <WarningsAsErrors />
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Version>0.0.1-beta</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -39,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
-    <None Include="$(MSBuildThisFileDirectory)\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <!-- Automatically expose internals to test projects -->
