@@ -3,10 +3,10 @@ using Lucent.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Lucent.Tests;
+namespace Lucent.Tests.Configuration;
 
 [TestClass]
-public class IndexConfiguration
+public class IndexConfigurationTest
 {
     [TestMethod]
     public void IndexConfiguration_Default_Works()
@@ -24,7 +24,7 @@ public class IndexConfiguration
         var services = new ServiceCollection();
         services.AddLucentIndex();
 
-        services.Configure<Configuration.IndexConfiguration>(config => config.Directory = null);
+        services.Configure<IndexConfiguration>(config => config.Directory = null);
         var provider = services.BuildServiceProvider();
 
         Assert.ThrowsExactly<OptionsValidationException>(() => provider.GetRequiredService<IndexWriter>());
@@ -37,7 +37,7 @@ public class IndexConfiguration
         var services = new ServiceCollection();
         services.AddLucentIndex();
 
-        services.Configure<Configuration.IndexConfiguration>(config => config.Analyzer = null);
+        services.Configure<IndexConfiguration>(config => config.Analyzer = null);
         var provider = services.BuildServiceProvider();
 
         Assert.ThrowsExactly<OptionsValidationException>(() => provider.GetRequiredService<IndexWriter>());
