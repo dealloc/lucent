@@ -1,0 +1,45 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>Lucent</Product>
+    <Company>Lucent Contributors</Company>
+    <Copyright>Copyright © 2024 Lucent Contributors</Copyright>
+    <Description>A lean, minimalistic .NET library that provides idiomatic integration of Lucene.NET with dependency injection and modern .NET configuration patterns.</Description>
+    <PackageProjectUrl>https://github.com/dealloc/lucent</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dealloc/lucent</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageTags>lucene;lucene.net;search;index;full-text;dotnet;di;dependency-injection</PackageTags>
+    <Authors>Lucent Contributors</Authors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
