@@ -61,3 +61,7 @@ nunit-*.xml
 
 # Samples folders / files
 /index/
+
+# DocFX generated files
+/docs/api
+/_site
