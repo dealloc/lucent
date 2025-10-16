@@ -65,3 +65,6 @@ nunit-*.xml
 # DocFX generated files
 /docs/api
 /_site
+
+# Generated files
+CHANGELOG.md
