@@ -32,7 +32,7 @@ jobs:
       uses: NuGet/login@v1
       id: login
       with:
-        user: dealloc
+        user: ${{ github.repository_owner }}
 
     - name: Determine version
       id: version
@@ -64,7 +64,7 @@ jobs:
     - name: Publish to NuGet.org
       run: |
         dotnet nuget push ./artifacts/*.nupkg \
-          --api-key ${{steps.login.outputs.NUGET_API_KEY}}
+          --api-key ${{steps.login.outputs.NUGET_API_KEY}} \
           --source https://api.nuget.org/v3/index.json
 
     - name: Upload artifacts
@@ -73,3 +73,26 @@ jobs:
         name: nuget-packages
         path: ./artifacts/*.nupkg
         retention-days: 90
+
+    - name: Generate a changelog
+      uses: orhun/git-cliff-action@v4
+      with:
+        config: cliff.toml
+        args: --verbose
+      env:
+        OUTPUT: CHANGELOG.md
+        GITHUB_REPO: ${{ github.repository }}
+      
+      # Update the GitHub release with the manifest and module archive files.
+    - name: Update Release With Files
+      id: create_version_release
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        name: ${{ github.event.release.name }}
+        draft: ${{ github.event.release.draft }}
+        prerelease: ${{ github.event.release.prerelease }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: ./artifacts/*.nupkg
+        tag: ${{ github.event.release.tag_name }}
+        bodyFile: CHANGELOG.md
