@@ -142,6 +142,8 @@ When you call `AddLucentIndex()` or `AddNamedLucentIndex()`, the following servi
 - **`IndexWriter`** (scoped) - For adding, updating, and deleting documents
 - **`IndexReader`** (scoped) - For reading the index
 - **`IndexSearcher`** (scoped) - For searching the index
+- **`ITaxonomyWriter`** (scoped) - For writing facet taxonomies (when FacetsDirectory is configured)
+- **`TaxonomyReader`** (scoped) - For reading facet taxonomies (when FacetsDirectory is configured)
 
 ### Configuration Options
 
@@ -156,13 +158,121 @@ public class IndexConfiguration
     // The directory where the index is stored (default: RAMDirectory)
     public Directory Directory { get; set; }
 
+    // Optional: The directory for storing facet taxonomies
+    public Directory FacetsDirectory { get; set; }
+
     // The analyzer to use for text processing (default: StandardAnalyzer)
     public Analyzer Analyzer { get; set; }
 
     // Optional: Custom IndexWriterConfig (auto-created if null)
     public IndexWriterConfig IndexWriterConfig { get; set; }
+
+    // Optional: Configuration for faceted search
+    public FacetsConfig FacetsConfig { get; set; }
 }
 ```
+
+### Faceted Search
+
+Lucent supports Lucene.NET's faceted search capabilities through taxonomy-based faceting. This enables features like filtering by categories, brands, or other hierarchical dimensions.
+
+#### Basic Facets Setup
+
+Configure facets by setting a `FacetsDirectory` and optionally a `FacetsConfig`:
+
+```csharp
+using Lucene.Net.Facet;
+using Lucene.Net.Store;
+using Lucent.Configuration;
+
+builder.Services.AddLucentIndex();
+builder.Services.Configure<IndexConfiguration>(options =>
+{
+    options.Directory = new MMapDirectory(new DirectoryInfo("index"));
+    options.FacetsDirectory = new MMapDirectory(new DirectoryInfo("facets"));
+    options.FacetsConfig = new FacetsConfig();
+});
+```
+
+#### Indexing with Facets
+
+When facets are configured, inject `ITaxonomyWriter` along with `IndexWriter`:
+
+```csharp
+using Lucene.Net.Documents;
+using Lucene.Net.Documents.Extensions;
+using Lucene.Net.Facet;
+using Lucene.Net.Facet.Taxonomy;
+using Lucene.Net.Index;
+
+using var writer = scope.ServiceProvider.GetRequiredService<IndexWriter>();
+using var taxonomyWriter = scope.ServiceProvider.GetRequiredService<ITaxonomyWriter>();
+var facetsConfig = scope.ServiceProvider
+    .GetRequiredService<IOptions<IndexConfiguration>>().Value.FacetsConfig;
+
+var document = new Document();
+document.AddStringField("name", "MacBook Pro", Field.Store.YES);
+
+// Add facet fields
+document.AddFacetField("category", "Electronics");
+document.AddFacetField("brand", "Apple");
+
+// Build the document with facets
+var builtDoc = facetsConfig.Build(taxonomyWriter, document);
+writer.AddDocument(builtDoc);
+
+writer.Commit();
+taxonomyWriter.Commit();
+```
+
+#### Searching with Facets
+
+Use `FacetsCollector` and `TaxonomyReader` to retrieve facet counts:
+
+```csharp
+using Lucene.Net.Facet;
+using Lucene.Net.Facet.Taxonomy;
+using Lucene.Net.Search;
+
+var searcher = scope.ServiceProvider.GetRequiredService<IndexSearcher>();
+var taxonomyReader = scope.ServiceProvider.GetRequiredService<TaxonomyReader>();
+var facetsConfig = scope.ServiceProvider
+    .GetRequiredService<IOptions<IndexConfiguration>>().Value.FacetsConfig;
+
+var query = new MatchAllDocsQuery();
+var facetsCollector = new FacetsCollector();
+
+FacetsCollector.Search(searcher, query, 10, facetsCollector);
+
+// Get facet counts
+var facets = new FastTaxonomyFacetCounts(taxonomyReader, facetsConfig, facetsCollector);
+
+var categoryFacets = facets.GetTopChildren(10, "category");
+foreach (var facet in categoryFacets.LabelValues)
+{
+    Console.WriteLine($"{facet.Label}: {facet.Value}");
+}
+```
+
+#### Drill-Down Queries
+
+Filter results by facet values using `DrillDownQuery`:
+
+```csharp
+using Lucene.Net.Facet;
+
+var drillDownQuery = new DrillDownQuery(facetsConfig);
+drillDownQuery.Add("category", "Electronics");
+
+var electronicsCollector = new FacetsCollector();
+var topDocs = FacetsCollector.Search(searcher, drillDownQuery, 10, electronicsCollector);
+
+// Get facet counts for the filtered results
+var electronicsFacets = new FastTaxonomyFacetCounts(
+    taxonomyReader, facetsConfig, electronicsCollector);
+```
+
+For a complete example, see the [Facets sample](samples/Lucent.Samples.Facets).
 
 ### Working with ASP.NET Core
 
