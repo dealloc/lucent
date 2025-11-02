@@ -1,4 +1,6 @@
-﻿using Lucene.Net.Index;
+﻿using Lucene.Net.Facet.Taxonomy;
+using Lucene.Net.Facet.Taxonomy.Directory;
+using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucent.Configuration;
 using Lucent.Configuration.Configurators;
@@ -62,10 +64,25 @@ public static class LucentServiceCollectionExtensions
             return new IndexWriter(config.Directory, writerConfig);
         });
 
-        // TODO: should we make these services transient to allow more fine grained control of re-creation?
+        services.AddKeyedScoped<ITaxonomyWriter>(key, static (provider, name) =>
+        {
+            var snapshot = provider.GetRequiredService<IOptionsSnapshot<IndexConfiguration>>();
+            var config = snapshot.Get(name as string);
+
+            return new DirectoryTaxonomyWriter(config.FacetsDirectory);
+        });
+
         services.AddKeyedScoped<IndexReader>(key,
             static (provider, name) => provider.GetRequiredKeyedService<IndexWriter>(name).GetReader(false));
         services.AddKeyedScoped<IndexSearcher>(key, static (provider, name) =>
             new IndexSearcher(provider.GetRequiredKeyedService<IndexReader>(name)));
+
+        services.AddKeyedScoped<TaxonomyReader>(key, static (provider, name) =>
+        {
+            var snapshot = provider.GetRequiredService<IOptionsSnapshot<IndexConfiguration>>();
+            var config = snapshot.Get(name as string);
+
+            return new DirectoryTaxonomyReader(config.FacetsDirectory);
+        });
     }
 }

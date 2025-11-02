@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Lucene.Net.Analysis;
+using Lucene.Net.Facet;
 using Lucene.Net.Index;
 using Lucene.Net.Util;
 
@@ -27,6 +28,11 @@ public sealed class IndexConfiguration
     public Lucene.Net.Store.Directory? Directory { get; set; }
 
     /// <summary>
+    /// Allows configuring the <see cref="Lucene.Net.Store.Directory" /> used for storing facet information.
+    /// </summary>
+    public Lucene.Net.Store.Directory? FacetsDirectory { get; set; }
+
+    /// <summary>
     /// The <see cref="Lucene.Net.Analysis.Analyzer" /> to use when creating the index.
     /// </summary>
     [Required]
@@ -38,4 +44,9 @@ public sealed class IndexConfiguration
     /// <see cref="Analyzer" />.
     /// </summary>
     public IndexWriterConfig? IndexWriterConfig { get; set; }
+
+    /// <summary>
+    /// Allows configuring the <see cref="FacetsConfig" /> used for faceted search.
+    /// </summary>
+    public FacetsConfig? FacetsConfig { get; set; }
 }
