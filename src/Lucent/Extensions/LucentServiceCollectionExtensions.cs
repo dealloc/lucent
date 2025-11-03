@@ -23,9 +23,12 @@ public static class LucentServiceCollectionExtensions
     /// <remarks>
     /// To register multiple indexes, see <see cref="AddNamedLucentIndex" />.
     /// </remarks>
-    public static IServiceCollection AddLucentIndex(this IServiceCollection services)
+    public static IServiceCollection AddLucentIndex(
+        this IServiceCollection services,
+        Action<IndexConfiguration>? configure = null
+    )
     {
-        AddKeyedLucentIndex(services, null);
+        AddKeyedLucentIndex(services, null, configure);
 
         return services;
     }
@@ -36,9 +39,14 @@ public static class LucentServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to register the services under.</param>
     /// <param name="indexName">The name of the index to register, this will also serve as the key for services.</param>
-    public static IServiceCollection AddNamedLucentIndex(this IServiceCollection services, string indexName)
+    /// <param name="configure">An optional configuration callback.</param>
+    public static IServiceCollection AddNamedLucentIndex(
+        this IServiceCollection services,
+        string indexName,
+        Action<IndexConfiguration>? configure = null
+    )
     {
-        AddKeyedLucentIndex(services, indexName);
+        AddKeyedLucentIndex(services, indexName, configure);
 
         return services;
     }
@@ -47,10 +55,13 @@ public static class LucentServiceCollectionExtensions
     /// Adds all services under the <paramref name="key" /> service key.
     /// If <paramref name="key" /> is <c>null</c>, services will be registered as if they weren't keyed.
     /// </summary>
-    private static void AddKeyedLucentIndex(IServiceCollection services, string? key)
+    private static void AddKeyedLucentIndex(IServiceCollection services, string? key, Action<IndexConfiguration>? configure = null)
     {
         var name = key ?? Options.Options.DefaultName;
-        services.AddOptions<IndexConfiguration>(name);
+        var config = services.AddOptions<IndexConfiguration>(name);
+        if (configure is not null)
+            config.Configure(configure);
+
         services.AddSingleton<IValidateOptions<IndexConfiguration>, IndexConfigurationValidator>();
         services.TryAddTransient<IConfigureOptions<IndexConfiguration>, DefaultIndexConfigurator>();
 
